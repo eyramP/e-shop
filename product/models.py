@@ -12,6 +12,7 @@ class Category(models.TextChoices):
     FOOD = "Food"
     HOME = "Home"
     KITCHEN = "Kitchen"
+    CLOTHING = "Clothing"
 
 
 class Product(models.Model):
@@ -24,3 +25,6 @@ class Product(models.Model):
     stock = models.IntegerField(default=0)
     user = models.ForeignKey(User, related_name="products", on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
