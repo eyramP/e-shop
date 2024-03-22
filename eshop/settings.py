@@ -40,8 +40,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
+    # ***** Apps I have installed *****
     "rest_framework",
     "product",
+    "django_filters",
+    # ***** Apps I have installed *****
 ]
 
 MIDDLEWARE = [
