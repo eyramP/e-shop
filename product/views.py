@@ -37,4 +37,5 @@ def get_product_details(request, id):
 
     serializer = ProductSerializer(product)
 
+
     return Response({"product": serializer.data})
