@@ -34,8 +34,8 @@ def custom_exception_handler(exc, context):
         return response
 
     else:
-        error = {
-            "error": "Somethong went wrong.",
-        }
+        # error = {
+        #     "error": "Somethong went wrong.",
+        # }
 
-        return Response(error, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        # return Response(error, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
