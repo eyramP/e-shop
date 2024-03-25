@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.pagination import PageNumberPagination
+from rest_framework import status
 
 from .models import Product, ProductImages
 from .serializers import ProductSerializer, ProductImageSerializer
@@ -50,7 +51,6 @@ def upload_product_images(request):
         image = ProductImages.objects.create(
             product=Product(data["product"]),
             image=f
-            # Product()
         )
         images.append(image)
 
@@ -58,3 +58,16 @@ def upload_product_images(request):
     return Response(serializer.data)
 
 
+@api_view(["POST"])
+def new_product(request):
+    data = request.data
+    if Product.objects.filter(name=data["name"]).exists():
+        return Response({"error": "Producct with the given name already exists"}, status=status.HTTP_400_BAD_REQUEST)
+    serializer = ProductSerializer(data=data)
+    if serializer.is_valid():
+        product = Product.objects.create(**data)
+        res_serializer = ProductSerializer(product)
+
+        return Response({"Product": res_serializer.data})
+
+    return Response(serializer.errors)
