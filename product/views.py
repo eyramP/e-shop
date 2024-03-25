@@ -62,7 +62,8 @@ def upload_product_images(request):
 def new_product(request):
     data = request.data
     if Product.objects.filter(name=data["name"]).exists():
-        return Response({"error": "Producct with the given name already exists"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "Product with the given name already exists"}, status=status.HTTP_400_BAD_REQUEST)
+
     serializer = ProductSerializer(data=data)
     if serializer.is_valid():
         product = Product.objects.create(**data)
@@ -71,3 +72,42 @@ def new_product(request):
         return Response({"Product": res_serializer.data})
 
     return Response(serializer.errors)
+
+
+@api_view(["PUT"])
+def update_product(request, id):
+    product = get_object_or_404(Product, id=id)
+    data = request.data
+
+    # Check if produdct belong to user
+    if not product.user == request.user:
+        return Response({"error": "This product does not belong to you."}, status=status.HTTP_400_BAD_REQUEST)
+    product.name = data["name"]
+    product.description = data["description"]
+    product.price = data["price"]
+    product.brand = data["brand"]
+    product.stock = data["stock"]
+    product.ratings = data["ratings"]
+    product.category = data["category"]
+    product.save()
+
+    serializer = ProductSerializer(product)
+
+    return Response({"Prodict": serializer.data}, status=status.HTTP_200_OK)
+
+
+@api_view(["DELETE"])
+def delete_product(request, id):
+    product = get_object_or_404(Product, id=id)
+
+    # Check if produdct belong to user
+    # if not product.user == request.user:
+    #     return Response({"error": "You are not allowed to delete this product."}, status=status.HTTP_400_BAD_REQUEST)
+
+    images = ProductImages.objects.filter(product=product)
+    for image in images:
+        image.delete()
+
+    product.delete()
+
+    return Response({"success": "Product deleted successfully"}, status=status.HTTP_200_OK)

@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.dispatch import receiver
+from django.db.models.signals import post_delete
 
 
 User = get_user_model()
@@ -33,3 +35,10 @@ class Product(models.Model):
 class ProductImages(models.Model):
     product = models.ForeignKey(Product, related_name="images", on_delete=models.CASCADE)
     image = models.ImageField(upload_to="product_images/")
+
+
+@receiver(post_delete, sender=ProductImages)
+def auto_delete_file_on_delete(sender, instance, **kwargs):
+    if instance.image:
+        instance.image.delete(save=False)
+        
