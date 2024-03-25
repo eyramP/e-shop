@@ -101,8 +101,8 @@ def delete_product(request, id):
     product = get_object_or_404(Product, id=id)
 
     # Check if produdct belong to user
-    # if not product.user == request.user:
-    #     return Response({"error": "You are not allowed to delete this product."}, status=status.HTTP_400_BAD_REQUEST)
+    if not product.user == request.user:
+        return Response({"error": "You are not allowed to delete this product."}, status=status.HTTP_400_BAD_REQUEST)
 
     images = ProductImages.objects.filter(product=product)
     for image in images:
