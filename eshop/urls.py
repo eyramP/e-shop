@@ -29,3 +29,7 @@ urlpatterns = [
 
 handler404 = "utils.error_views.handler404"
 handler500 = "utils.error_views.handler500"
+
+admin.site.site_header = "E-Shop API Admin"
+admin.site.site_title = "E-Shop API Admin Portal"
+admin.site.index_title = "Welcome to the E-Shop API Admin Portal"

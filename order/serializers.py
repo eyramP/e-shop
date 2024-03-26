@@ -24,6 +24,7 @@ class OrderSerializer(serializers.ModelSerializer):
             "city",
             "zip",
             "phone_number",
+            "country",
             "payment_status",
             "order_status",
             "user",
