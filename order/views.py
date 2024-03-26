@@ -51,3 +51,25 @@ def new_order(request):
         serializer = OrderSerializer(order)
 
         return Response(serializer.data)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_orders(request):
+    orders = Order.objects.prefetch_related("items").all()
+    serrializer = OrderSerializer(orders, many=True)
+
+    return Response({"orders": serrializer.data})
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_order_details(request, id):
+    try:
+        order = Order.objects.prefetch_related("items").get(id=id)
+    except Order.DoesNotExist:
+        return Response({"error": "Order not found"}, status.HTTP_404_NOT_FOUND)
+    serrializer = OrderSerializer(order)
+
+    return Response({"order": serrializer.data})
+
