@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "storages",
     "rest_framework_simplejwt",
     "account",
+    "order"
     # ***** Apps I have installed *****
 ]
 

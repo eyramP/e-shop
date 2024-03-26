@@ -22,6 +22,12 @@ class SimpleImageSerializer(serializers.ModelSerializer):
         fields = ["image"]
 
 
+class SimpleProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ["name"]
+
+
 class ProductSerializer(serializers.ModelSerializer):
     images = SimpleImageSerializer(many=True, read_only=True)
     user = SimpleUserSerializer(read_only=True)
