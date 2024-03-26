@@ -1,11 +1,14 @@
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
+from django.db.models import Avg
+
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 
-from .models import Product, ProductImages
+from .models import Product, ProductImages, Review
 from .serializers import ProductSerializer, ProductImageSerializer
 from .filters import ProductFilter
 
@@ -59,6 +62,7 @@ def upload_product_images(request):
 
 
 @api_view(["POST"])
+@permission_classes([IsAuthenticated,])
 def new_product(request):
     data = request.data
     if Product.objects.filter(name=data["name"]).exists():
@@ -66,7 +70,7 @@ def new_product(request):
 
     serializer = ProductSerializer(data=data)
     if serializer.is_valid():
-        product = Product.objects.create(**data)
+        product = Product.objects.create(**data,  user=request.user)
         res_serializer = ProductSerializer(product)
 
         return Response({"Product": res_serializer.data})
@@ -75,13 +79,14 @@ def new_product(request):
 
 
 @api_view(["PUT"])
+@permission_classes([IsAuthenticated,])
 def update_product(request, id):
     product = get_object_or_404(Product, id=id)
     data = request.data
 
     # Check if produdct belong to user
     if not product.user == request.user:
-        return Response({"error": "This product does not belong to you."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "You cannot update this product."}, status=status.HTTP_403_FORBIDDEN)
     product.name = data["name"]
     product.description = data["description"]
     product.price = data["price"]
@@ -97,12 +102,13 @@ def update_product(request, id):
 
 
 @api_view(["DELETE"])
+@permission_classes([IsAuthenticated,])
 def delete_product(request, id):
     product = get_object_or_404(Product, id=id)
 
     # Check if produdct belong to user
     if not product.user == request.user:
-        return Response({"error": "You are not allowed to delete this product."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "You are not allowed to delete this product."}, status=status.HTTP_403_FORBIDDEN)
 
     images = ProductImages.objects.filter(product=product)
     for image in images:
@@ -111,3 +117,70 @@ def delete_product(request, id):
     product.delete()
 
     return Response({"success": "Product deleted successfully"}, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def create_review(request, id):
+    user = request.user
+    product = get_object_or_404(Product, id=id)
+    data = request.data
+
+    review = product.reviews.filter(user=user)
+
+    if (data["rating"] <= 0 or data["rating"] > 5):
+        return Response({"error": "Rating must be between 1 to 5"}, status=status.HTTP_400_BAD_REQUEST)
+
+    elif review.exists():
+        new_review = {"rating": data["rating"], "comment": data["comment"]}
+        review.update(**new_review)
+
+        rating = product.reviews.aggregate(
+            avg_ratings=Avg("rating")
+        )
+        product.ratings = rating["avg_ratings"]
+        product.save()
+
+        return Response({"success": "Review updated."}, status=status.HTTP_200_OK)
+
+    else:
+        Review.objects.create(
+           user=user,
+           product=product,
+           comment=data["comment"],
+           rating=data["rating"]
+        )
+
+        rating = product.reviews.aggregate(
+            avg_ratings=Avg("rating")
+        )
+        product.ratings = rating["avg_ratings"]
+        product.save()
+
+        return Response({"success": "Review posted."}, status=status.HTTP_200_OK)
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def delete_review(request, id):
+    user = request.user
+    product = get_object_or_404(Product, id=id)
+
+    review = product.reviews.filter(user=user)
+    if review.exists():
+        review.delete()
+
+        rating = product.reviews.aggregate(
+            avg_ratings=Avg("rating")
+        )
+
+        if rating["avg_ratings"] is None:
+            rating["avg_ratings"] = 0
+
+        product.ratings = rating["avg_ratings"]
+        product.save()
+
+        return Response({"success": "Review deleted."})
+
+    else:
+        return Response({"error": "Review not found."}, status=status.HTTP_404_NOT_FOUND)

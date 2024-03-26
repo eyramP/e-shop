@@ -1,6 +1,13 @@
 from rest_framework import serializers
-from .models import Product, ProductImages
 
+from account.serializers import SimpleUserSerializer
+from .models import Product, ProductImages, Review
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ["id", "product", "user", "comment", "rating"]
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
@@ -17,6 +24,9 @@ class SimpleImageSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     images = SimpleImageSerializer(many=True, read_only=True)
+    user = SimpleUserSerializer(read_only=True)
+    # reviews = ReviewSerializer(many=True, read_only=True)
+    reviews = serializers.SerializerMethodField(method_name="get_reviews")
 
     class Meta:
         model = Product
@@ -32,6 +42,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "user",
             "created_at",
             "images",
+            "reviews"
         ]
 
         # extra_kwargs = {
@@ -40,3 +51,10 @@ class ProductSerializer(serializers.ModelSerializer):
         #     "stock": {"required": True, 'allow_blank': False},
         #     "category": {"required": True, 'allow_blank': False},
         # }
+
+    def get_reviews(self, obj):
+        reviews = obj.reviews.all()
+        serializer = ReviewSerializer(reviews, many=True)
+
+        return serializer.data
+

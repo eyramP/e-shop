@@ -23,7 +23,7 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=7, decimal_places=2, default=0)
     brand = models.CharField(max_length=255)
     category = models.CharField(max_length=30, choices=Category.choices)
-    ratings = models.DecimalField(max_digits=7, decimal_places=2, default=0)
+    ratings = models.IntegerField(default=0)
     stock = models.IntegerField(default=0)
     user = models.ForeignKey(User, related_name="products", on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -41,4 +41,14 @@ class ProductImages(models.Model):
 def auto_delete_file_on_delete(sender, instance, **kwargs):
     if instance.image:
         instance.image.delete(save=False)
-        
+
+
+class Review(models.Model):
+    product = models.ForeignKey(Product, related_name="reviews", on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name="reviews", on_delete=models.SET_NULL, null=True)
+    comment = models.TextField()
+    rating = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(self.comment)
