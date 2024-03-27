@@ -12,6 +12,7 @@ from .serializers import SignUpSerializer, UserSerializer
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
+from utils.helpers import get_current_host
 from .models import Profile
 
 
@@ -62,13 +63,6 @@ def update_profile(request):
 
     serializer = UserSerializer(user)
     return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-def get_current_host(request):
-    """Helper method for getting """
-    protocol = request.is_secure() and 'https' or 'http'
-    host = request.get_host()
-    return "{protocol}://{host}/api/".format(protocol=protocol, host=host)
 
 
 @api_view(["POST"])

@@ -8,4 +8,7 @@ urlpatterns = [
     path("orders/<str:id>/update/", views.update_order, name="update_order"),
     path("orders/<str:id>/delete/", views.delete_order, name="delete_order"),
     path("orders/<str:id>/process/", views.process_order, name="process_order"),
+
+    path("create_checkout_session/", views.create_checkout_session, name="create_checkout_session"),
+    path("order/webhook/", views.stripe_webhook, name="stripe_webhook"),
 ]

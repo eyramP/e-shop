@@ -52,6 +52,7 @@ class OrderItem(models.Model):
     quantity = models.PositiveBigIntegerField(default=1)
     product_name = models.CharField(max_length=255)
     price = models.DecimalField(max_digits=7, decimal_places=2)
+    image = models.CharField(max_length=255, default="")
 
     def __str__(self):
         return self.product_name
