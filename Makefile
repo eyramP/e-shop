@@ -1,9 +1,9 @@
-mgns:
+migrations:
 	python manage.py makemigrations
 
-mgt:
+migrate:
 	python manage.py migrate
 
-rs:
+runserver:
 	python manage.py runserver
 	
